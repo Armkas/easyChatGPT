@@ -69,22 +69,45 @@ class ChatPage extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 itemCount: chat.messages.length,
-                itemBuilder: (context, index) => ListTile(
-                  title: Text(chat.messages[index]),
-                ),
+                itemBuilder: (context, index) {
+                  final message = chat.messages[index];
+                  final isUserMessage = message.startsWith("User:");
+                  return ListTile(
+                    title: Align(
+                      alignment: isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isUserMessage ? Colors.blue : Colors.grey,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          message.substring(5),
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                labelText: 'Send a message',
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  labelText: 'Send a message',
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.send),
+                    onPressed: () {
+                      if (_controller.text.isNotEmpty) {
+                        Provider.of<ChatModel>(context, listen: false).sendMessage(_controller.text);
+                        _controller.clear();
+                      }
+                    },
+                  ),
+                ),
               ),
-              onSubmitted: (value) {
-                if (value.isNotEmpty) {
-                  Provider.of<ChatModel>(context, listen: false).sendMessage(value);
-                  _controller.clear();
-                }
-              },
             ),
           ],
         );
