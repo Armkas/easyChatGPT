@@ -4,7 +4,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget {//这是一个无状态的小部件
   const MyApp({super.key});
 
   // This widget is the root of your application.
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatefulWidget {//这是一个有状态的小部件，它是应用程序的主页。它有一个
   const MyHomePage({super.key, required this.title});
 
   // 这个小部件是你的应用程序的主页。它是有状态的，意味着
@@ -40,10 +40,10 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();//它有一个_MyHomePageState类，该类包含影响其外观的状态。
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> {//这是MyHomePage小部件的状态类。它包含一个_counter变量和一个_incrementCounter方法，这些都会影响小部件的外观。
   int _counter = 0;
 
   void _incrementCounter() {
