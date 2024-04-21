@@ -58,65 +58,57 @@ class MyHomePage extends StatelessWidget {
 }
 
 class ChatPage extends StatelessWidget {
-  final TextEditingController _controller = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatModel>(
-      builder: (context, chat, child) {
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: chat.messages.length,
-                itemBuilder: (context, index) {
-                  final message = chat.messages[index];
-                  final isUserMessage = message.startsWith("User:");
-                  return ListTile(
-                    title: Align(
-                      alignment: isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: isUserMessage ? Colors.blue : Colors.grey,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          message.substring(5),
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+    bool isKeyValid = Provider.of<APIManager>(context).apiKey.isNotEmpty;
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: Provider.of<ChatModel>(context).messages.length,
+            itemBuilder: (context, index) => ListTile(
+              title: Text(Provider.of<ChatModel>(context).messages[index]),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  labelText: 'Send a message',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.send),
-                    onPressed: () {
-                      if (_controller.text.isNotEmpty) {
-                        Provider.of<ChatModel>(context, listen: false).sendMessage(_controller.text);
-                        _controller.clear();
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+        TextField(
+          enabled: isKeyValid,
+          decoration: InputDecoration(
+            labelText: 'Send a message',
+            hintText: isKeyValid ? 'Type your message...' : 'Invalid API Key',
+          ),
+          onSubmitted: (value) {
+            if (value.isNotEmpty) {
+              Provider.of<ChatModel>(context, listen: false).sendMessage(value);
+            }
+          },
+        ),
+      ],
     );
   }
 }
 
-class SettingsPage extends StatelessWidget {
+
+class SettingsPage extends StatefulWidget {
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  final _keyController = TextEditingController();
+  String? _errorText;
+
+  void _validateKey(String key) {
+    Provider.of<APIManager>(context, listen: false).setApiKey(key);
+    Provider.of<APIManager>(context, listen: false).askGPT("Hello")
+      .then((_) => setState(() => _errorText = null))
+      .catchError((e) {
+        setState(() => _errorText = e.toString());
+        Provider.of<APIManager>(context, listen: false).setApiKey(""); // Reset the API Key
+      });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -124,15 +116,16 @@ class SettingsPage extends StatelessWidget {
       child: Column(
         children: [
           TextField(
+            controller: _keyController,
             decoration: InputDecoration(
               labelText: 'Enter your OpenAI API Key',
+              errorText: _errorText,
             ),
-            onChanged: (value) {
-              Provider.of<APIManager>(context, listen: false).setApiKey(value);
-            },
+            onChanged: _validateKey,
           ),
         ],
       ),
     );
   }
 }
+

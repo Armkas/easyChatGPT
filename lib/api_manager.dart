@@ -10,7 +10,8 @@ class APIManager {
   }
 
   Future<String> askGPT(String prompt) async {
-    var url = Uri.parse('https://api.openai.com/v1/engines/davinci-codex/completions');
+    var url = Uri.parse(
+        'https://api.openai.com/v1/engines/davinci-codex/completions');
     var response = await http.post(
       url,
       headers: {
@@ -26,8 +27,11 @@ class APIManager {
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       return data['choices'][0]['text'] as String;
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw Exception('Unauthorized: Check your API Key');
     } else {
-      throw Exception('Failed to load data');
+      throw Exception(
+          'Failed to load data with status code: ${response.statusCode}');
     }
   }
 }
@@ -41,8 +45,8 @@ class ChatModel with ChangeNotifier {
   List<String> get messages => _messages;
 
   void updateAPIManager(APIManager apiManager) {
-      _apiManager = apiManager;
-      notifyListeners();
+    _apiManager = apiManager;
+    notifyListeners();
   }
 
   void sendMessage(String text) {
@@ -57,6 +61,3 @@ class ChatModel with ChangeNotifier {
     });
   }
 }
-
-
-
