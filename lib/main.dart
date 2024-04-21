@@ -3,8 +3,20 @@ import 'package:provider/provider.dart';
 import 'api_manager.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<APIManager>(create: (_) => APIManager()),
+        ChangeNotifierProxyProvider<APIManager, ChatModel>(
+          create: (_) => ChatModel(APIManager()),
+          update: (_, apiManager, chatModel) => chatModel!..updateAPIManager(apiManager),
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -46,15 +58,37 @@ class MyHomePage extends StatelessWidget {
 }
 
 class ChatPage extends StatelessWidget {
+  final TextEditingController _controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // Chat interface goes here
-        ],
-      ),
+    return Consumer<ChatModel>(
+      builder: (context, chat, child) {
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: chat.messages.length,
+                itemBuilder: (context, index) => ListTile(
+                  title: Text(chat.messages[index]),
+                ),
+              ),
+            ),
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Send a message',
+              ),
+              onSubmitted: (value) {
+                if (value.isNotEmpty) {
+                  Provider.of<ChatModel>(context, listen: false).sendMessage(value);
+                  _controller.clear();
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

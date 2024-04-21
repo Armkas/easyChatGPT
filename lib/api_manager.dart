@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 class APIManager {
   String apiKey = "";
@@ -30,5 +31,32 @@ class APIManager {
     }
   }
 }
+
+class ChatModel with ChangeNotifier {
+  APIManager _apiManager;
+  List<String> _messages = [];
+
+  ChatModel(this._apiManager);
+
+  List<String> get messages => _messages;
+
+  void updateAPIManager(APIManager apiManager) {
+      _apiManager = apiManager;
+      notifyListeners();
+  }
+
+  void sendMessage(String text) {
+    _messages.add("User: $text");
+    notifyListeners();
+    _apiManager.askGPT(text).then((response) {
+      _messages.add("GPT: $response");
+      notifyListeners();
+    }).catchError((error) {
+      _messages.add("Error: $error");
+      notifyListeners();
+    });
+  }
+}
+
 
 
