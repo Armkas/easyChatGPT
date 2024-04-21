@@ -9,7 +9,12 @@ void main() {
         Provider<APIManager>(create: (_) => APIManager()),
         ChangeNotifierProxyProvider<APIManager, ChatModel>(
           create: (_) => ChatModel(APIManager()),
-          update: (_, apiManager, chatModel) => chatModel!..updateAPIManager(apiManager),
+          update: (_, apiManager, chatModel) {
+            if (chatModel != null) {
+              chatModel = ChatModel(apiManager);
+            }
+            return chatModel!;
+          },
         ),
       ],
       child: MyApp(),
